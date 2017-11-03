@@ -1,45 +1,62 @@
 package com.imooc.dao;
 
 import com.imooc.bean.Message;
+import com.imooc.db.DBAccess;
+import org.apache.ibatis.session.SqlSession;
+import org.apache.log4j.Logger;
 
-import java.sql.*;
-import java.util.ArrayList;
-import java.util.List;
+import java.util.*;
 
 public class MessageDao {
-    public List<Message> querryMessageList(String command,String description){
-        List<Message> messageList = new ArrayList<Message>();
+
+    public List<Message> queryMessageList(String command, String description) {
+        List<Message> messages = new ArrayList<>();
+        DBAccess dbAccess = new DBAccess();
+        SqlSession sqlSession = null;
         try {
-            Class.forName("com.mysql.jdbc.Driver");
-            Connection conn = DriverManager.getConnection("jdbc:mysql://localhost:3306/micro_message", "root", "123456");
-            StringBuilder sql = new StringBuilder("select ID,COMMAND,DESCRIPTION,CONTENT from MESSAGE where 1=1");
-            List<String> params = new ArrayList<>();
-            if (command != null && !"".equals(command.trim())) {
-                sql.append(" and COMMAND = ?");
-                params.add(command);
-            }
-            if (description != null && !"".equals(description.trim())) {
-                sql.append(" and DESCRIPTION like '%'?'%'");
-                params.add(description);
-            }
-            PreparedStatement statement = conn.prepareStatement(sql.toString());
-            for(int i =0;i<params.size();i++){
-                statement.setString(i+1,params.get(i));
-            }
-            ResultSet rs = statement.executeQuery();
-            while (rs.next()) {
-                Message message = new Message();
-                message.setId(rs.getString("ID"));
-                message.setCommand(rs.getString("COMMAND"));
-                message.setDescription(rs.getString("DESCRIPTION"));
-                message.setContent(rs.getString("CONTENT"));
-                messageList.add(message);
-            }
-        } catch (ClassNotFoundException e) {
+            sqlSession = dbAccess.getSqlSession();
+            Message message = new Message();
+            message.setCommand(command);
+            message.setDescription(description);
+            messages = sqlSession.selectList("Message.querryMessageList",message);
+        } catch (Exception e) {
             e.printStackTrace();
-        } catch (SQLException e) {
-            e.printStackTrace();
+        } finally {
+            if (sqlSession != null) {
+                sqlSession.close();
+            }
         }
-        return messageList;
+        return messages;
     }
+
+    public void deleteOne(String id){
+        DBAccess dbAccess = new DBAccess();
+        SqlSession sqlSession = null;
+        try{
+            sqlSession = dbAccess.getSqlSession();
+            Message message = new Message();
+            message.setId(id);
+            sqlSession.delete("Message.deleteOne",message);
+            sqlSession.commit();
+        }catch (Exception e){
+            e.printStackTrace();
+        }finally{
+            sqlSession.close();
+        }
+    }
+
+    public void deleteBatch(List<String> ids){
+        DBAccess dbAccess = new DBAccess();
+        SqlSession sqlSession = null;
+        try{
+            sqlSession = dbAccess.getSqlSession();
+            sqlSession.delete("Message.deleteBatch",ids);
+            sqlSession.commit();
+        }catch (Exception e){
+            e.printStackTrace();
+        }finally{
+            sqlSession.close();
+        }
+    }
+
 }

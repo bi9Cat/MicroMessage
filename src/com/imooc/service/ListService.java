@@ -8,6 +8,6 @@ import java.util.List;
 public class ListService {
     public List<Message> querryMessageList(String command, String description){
         MessageDao messageDao = new MessageDao();
-        return messageDao.querryMessageList(command,description);
+        return messageDao.queryMessageList(command,description);
     }
 }

@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<!-- namespace命名空间，作用就是对sql进行分类化管理，理解sql隔离
+注意：使用mapper代理方法开发，namespace有特殊重要的作用
+-->
+<mapper namespace="Message">
+
+    <resultMap id="MessageResult" type="com.imooc.bean.Message">
+        <id column="ID" jdbcType="INTEGER" property="id"/>
+        <result column="COMMAND" jdbcType="VARCHAR" property="command"/>
+        <result column="DESCRIPTION" jdbcType="VARCHAR" property="description"/>
+        <result column="CONTENT" jdbcType="VARCHAR" property="content"/>
+    </resultMap>
+
+    <select id="querryMessageList" parameterType="com.imooc.bean.Message" resultType="com.imooc.bean.Message">
+      SELECT ID,COMMAND,DESCRIPTION,CONTENT FROM MESSAGE WHERE 1=1
+        <if test="command!=null and !&quot;&quot;.equals(command.trim())">AND COMMAND = #{command}</if>
+        <if test="description!=null and !&quot;&quot;.equals(description.trim())">AND DESCRIPTION LIKE '%' #{description} '%'</if>
+    </select>
+
+    <delete id="deleteOne" parameterType="com.imooc.bean.Message">
+        DELETE FROM MESSAGE WHERE ID = #{id}
+    </delete>
+
+    <delete id="deleteBatch" parameterType="java.util.List">
+        DELETE FROM MESSAGE WHERE ID in(
+          <foreach collection="list" item="item" separator=",">
+              #{item}
+          </foreach>
+        )
+    </delete>
+</mapper>
+
+
